@@ -5,7 +5,7 @@ $SERVICE_NAME = "biofouling-api"
 # Região do Google Cloud
 $REGION = "us-central1"
 # ID do Projeto no Google Cloud (DEFINA O SEU AQUI)
-$PROJECT_ID = "biofouling-backend-6776" 
+$PROJECT_ID = "biofouling-backend"
 
 Write-Host "Iniciando deploy do serviço $SERVICE_NAME no projeto $PROJECT_ID..." -ForegroundColor Cyan
 
