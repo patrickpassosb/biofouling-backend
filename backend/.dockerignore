@@ -4,5 +4,7 @@ __pycache__
 .git
 .gitignore
 .venv
-train_mock_model.py
-test_api.py
+scripts/
+tests/
+*.md
+.dockerignore

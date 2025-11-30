@@ -76,8 +76,8 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpx", specifier = ">=0.26.0" },
-    { name = "pytest", specifier = ">=8.0.0" },
+    { name = "httpx", specifier = ">=0.27.2" },
+    { name = "pytest", specifier = ">=8.3.4" },
 ]
 
 [[package]]

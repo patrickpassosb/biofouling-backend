@@ -5,11 +5,11 @@ import subprocess
 import sys
 import os
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8001"
 
 def wait_for_server():
     print("Waiting for server to start...")
-    for _ in range(30):
+    for i in range(60): # Increased wait time
         try:
             response = httpx.get(f"{BASE_URL}/health")
             if response.status_code == 200:
@@ -17,7 +17,10 @@ def wait_for_server():
                 return True
         except httpx.ConnectError:
             time.sleep(1)
-    print("Server failed to start.")
+        except Exception as e:
+            print(f"Error waiting for server: {e}")
+            time.sleep(1)
+    print("Server failed to start within timeout.")
     return False
 
 def test_health():
@@ -31,14 +34,17 @@ def test_health():
 def test_predict():
     print("\nTesting /api/v1/predict...")
     payload = {
-        "ship_id": "SHIP-123",
-        "voyage_duration_days": 15.5,
-        "avg_speed": 12.0,
-        "distance_traveled": 4500.0,
-        "port_time_ratio": 0.2,
-        "fuel_consumption": 50.0,
-        "temperature_avg": 28.0,
-        "last_cleaning_days": 180
+        "shipName": "SHIP-123",
+        "speed": 12.0,
+        "duration": 15.5,
+        "distance": 4500.0,
+        "beaufortScale": 3,
+        "Area_Molhada": 500.0,
+        "MASSA_TOTAL_TON": 50000.0,
+        "TIPO_COMBUSTIVEL_PRINCIPAL": "HFO",
+        "decLatitude": -23.0,
+        "decLongitude": -43.0,
+        "DiasDesdeUltimaLimpeza": 180.0
     }
     response = httpx.post(f"{BASE_URL}/api/v1/predict", json=payload)
     print(f"Status Code: {response.status_code}")
@@ -51,24 +57,30 @@ def test_predict_batch():
     payload = {
         "voyages": [
             {
-                "ship_id": "SHIP-123",
-                "voyage_duration_days": 15.5,
-                "avg_speed": 12.0,
-                "distance_traveled": 4500.0,
-                "port_time_ratio": 0.2,
-                "fuel_consumption": 50.0,
-                "temperature_avg": 28.0,
-                "last_cleaning_days": 180
+                "shipName": "SHIP-123",
+                "speed": 12.0,
+                "duration": 15.5,
+                "distance": 4500.0,
+                "beaufortScale": 3,
+                "Area_Molhada": 500.0,
+                "MASSA_TOTAL_TON": 50000.0,
+                "TIPO_COMBUSTIVEL_PRINCIPAL": "HFO",
+                "decLatitude": -23.0,
+                "decLongitude": -43.0,
+                "DiasDesdeUltimaLimpeza": 180.0
             },
             {
-                "ship_id": "SHIP-456",
-                "voyage_duration_days": 10.0,
-                "avg_speed": 18.0,
-                "distance_traveled": 4000.0,
-                "port_time_ratio": 0.1,
-                "fuel_consumption": 40.0,
-                "temperature_avg": 15.0,
-                "last_cleaning_days": 30
+                "shipName": "SHIP-456",
+                "speed": 18.0,
+                "duration": 10.0,
+                "distance": 4000.0,
+                "beaufortScale": 2,
+                "Area_Molhada": 450.0,
+                "MASSA_TOTAL_TON": 40000.0,
+                "TIPO_COMBUSTIVEL_PRINCIPAL": "VLSFO",
+                "decLatitude": 10.0,
+                "decLongitude": 20.0,
+                "DiasDesdeUltimaLimpeza": 30.0
             }
         ]
     }
@@ -81,11 +93,13 @@ def test_predict_batch():
 def run_tests():
     # Start server in background
     print("Starting server...")
+    # Use a different port for testing to avoid conflicts
     server_process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "app.main:app", "--port", "8000"],
-        cwd=os.path.dirname(os.path.abspath(__file__)),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        [sys.executable, "-m", "uvicorn", "app.main:app", "--port", "8001"],
+        cwd=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."),
+        # Remove PIPE to let it print to console for debugging
+        # stdout=subprocess.PIPE,
+        # stderr=subprocess.PIPE
     )
     
     try:

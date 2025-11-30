@@ -1,15 +1,16 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Biofouling Prediction API"
-    MODEL_PATH: str = "app/ml_model/model.joblib"
     LOG_LEVEL: str = "INFO"
+    
+    # External Model Config
+    EXTERNAL_MODEL_URL: str = "https://carpenterbb-api-transpetro-hackathon.hf.space/predict"
+    EXTERNAL_MODEL_API_KEY: str = ""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra='ignore')
 
 @lru_cache()
 def get_settings():

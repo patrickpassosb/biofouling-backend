@@ -11,10 +11,16 @@ async def predict(data: VoyageData) -> Any:
     Make a prediction for a single voyage.
     """
     try:
-        result = model_loader.predict(data)
+        result = await model_loader.predict(data)
         return result
+    except RuntimeError as e:
+        # External API or configuration errors
+        raise HTTPException(status_code=503, detail="Prediction service unavailable. Please try again later.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        # Unexpected errors - log but don't expose details
+        import logging
+        logging.getLogger(__name__).exception("Unexpected error in prediction")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/predict/batch", response_model=BatchPredictionResponse)
 async def predict_batch(batch_data: BatchPredictionRequest) -> Any:
@@ -22,23 +28,19 @@ async def predict_batch(batch_data: BatchPredictionRequest) -> Any:
     Make predictions for a batch of voyages.
     """
     try:
-        predictions = model_loader.predict_batch(batch_data.voyages)
+        predictions = await model_loader.predict_batch(batch_data.voyages)
         return BatchPredictionResponse(predictions=predictions)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Batch prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Batch prediction service unavailable.")
 
 @router.get("/model/info")
 async def model_info():
     """
     Get information about the loaded model.
     """
-    if model_loader.model is None:
-        try:
-            model_loader.load_model()
-        except Exception:
-            return {"status": "model not loaded"}
-            
+    from app.core.config import get_settings
+    settings = get_settings()
     return {
-        "type": type(model_loader.model).__name__,
-        "pipeline_steps": [step[0] for step in model_loader.model.steps] if hasattr(model_loader.model, 'steps') else "unknown"
+        "type": "External API",
+        "url": settings.EXTERNAL_MODEL_URL
     }

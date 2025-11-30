@@ -30,11 +30,12 @@ app = FastAPI(
 )
 
 # CORS Configuration
+# Note: "*" wildcard removed for security. Add specific origins as needed.
 origins = [
     "http://localhost",
-    "http://localhost:3000", # React/Next.js default
-    "https://biofouling-frontend.vercel.app", # Example Vercel deployment
-    "*" # Allow all for hackathon simplicity, restrict in production
+    "http://localhost:3000",  # React/Next.js default
+    "http://localhost:8000",  # Local API testing
+    "https://biofouling-frontend.vercel.app",  # Production frontend
 ]
 
 app.add_middleware(
